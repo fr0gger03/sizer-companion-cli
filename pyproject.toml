@@ -1,7 +1,7 @@
 [project]
 name = "acc-sizer-companion-cli"
-version = "0.1.0"
-description = "Add your description here"
+version = "1.0.0"
+description = "A python-based cli to help prepare data for use with VMware sizing tools"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
