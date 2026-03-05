@@ -9,7 +9,8 @@
 import argparse
 from argparse import SUPPRESS
 import sys
-from sizer_fxns import describe_import, default_import_sizing, custom_import_sizing
+# from sizer_fxns import describe_import, default_import_sizing, custom_import_sizing
+from sizer_fxns import describe_import, custom_import_sizing
 
 def main():
     class MyFormatter(argparse.RawDescriptionHelpFormatter):
