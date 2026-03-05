@@ -10,7 +10,7 @@ import argparse
 from argparse import SUPPRESS
 import sys
 # from sizer_fxns import describe_import, default_import_sizing, custom_import_sizing
-from sizer_fxns import describe_import, custom_import_sizing
+from sizer_fxns import describe_import, prepare_import
 
 def main():
     class MyFormatter(argparse.RawDescriptionHelpFormatter):
@@ -59,13 +59,13 @@ def main():
 
     # quick_sizing
 
-    describe_parser = subparsers.add_parser('describe', formatter_class=MyFormatter, parents=[parent_import_parser], help='Describe the contents of an imported file.')
+    describe_parser = subparsers.add_parser('describe', formatter_class=MyFormatter, parents=[parent_import_parser], help='Describe the contents of one or more imported files.')
     describe_parser.set_defaults(func = describe_import)
 
     # default_sizing_parser = subparsers.add_parser('default', formatter_class=MyFormatter, parents=[parent_import_parser], help='Import a file and receive a sizing recommendation without transforming data.')
     # default_sizing_parser.set_defaults(func = default_import_sizing)
 
-    custom_sizing_parser = subparsers.add_parser('custom', formatter_class=MyFormatter, parents=[parent_import_parser], help='Import a file and transform the data before receiving a sizing recommendation.')
+    custom_sizing_parser = subparsers.add_parser('prepare', formatter_class=MyFormatter, parents=[parent_import_parser], help='Import one or more files and transform the data for use with sizing tools.')
     # custom_sizing_parser = subparsers.add_parser('custom', formatter_class=MyFormatter, help='Import a file and transform the data before receiving a sizing recommendation.')
     custom_sizing_parser.add_argument('-exfil', '--exclude_filter', nargs = '+', help = 'A space-separated list of text strings used to identify workloads to exclude.')
     custom_sizing_parser.add_argument('-eff', '--exclude_filter_field', choices = ['cluster','os','vmName'], help = 'The column/field used for exclusion filtering.')
@@ -83,7 +83,7 @@ def main():
     # custom_sizing_parser.add_argument('-pct_mem','--percent_memory', default= 1, help= "The percent memory utilization to use for modeling, expressed as a decimal (i.e. use '1' for 100, or '.3' for 30, etc")
     # custom_sizing_parser.add_argument('-dp', '--data_protection', choices=["AUTO_AUTO","FTT1_RAID1","FTT1_RAID5","FTT2_RAID1","FTT2_RAID6"], type=str.upper, default="AUTO_AUTO", help = "The vSAN failures to tolerate (FTT) and fault tolerance method (FTM).")
 
-    custom_sizing_parser.set_defaults(func = custom_import_sizing)
+    custom_sizing_parser.set_defaults(func = prepare_import)
 
 # ============================
 # Parse arguments and call function

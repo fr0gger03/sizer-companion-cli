@@ -70,7 +70,7 @@ def describe_import(**kwargs):
 #         sys.exit(1)
 
 
-def custom_import_sizing(**kwargs):
+def prepare_import(**kwargs):
     ft = kwargs['file_type']
     fn = kwargs['file_name']
     input_path = kwargs['input_path']
