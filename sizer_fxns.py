@@ -174,15 +174,20 @@ def prepare_import(**kwargs):
             wp_file_list = [csv_file]
         else:
             pass
+        
+        print("Your data is prepped - please find the following files in the 'output' directory:")
+        print()
+        for file in wp_file_list:
+            print(file)
 
-        # add the list of files including the workloads to the payload parameter dictionary
-        payload_params['wp_file_list'] = wp_file_list
+        # # add the list of files including the workloads to the payload parameter dictionary
+        # payload_params['wp_file_list'] = wp_file_list
 
-        # build the recommendation payload
-        sizer_request = build_recommendation_payload(**payload_params)
+        # # build the recommendation payload
+        # sizer_request = build_recommendation_payload(**payload_params)
 
-        # include the recommendation payload in the sizing request for the sizer
-        rec_params['sizer_request'] = sizer_request
+        # # include the recommendation payload in the sizing request for the sizer
+        # rec_params['sizer_request'] = sizer_request
 
         # get the recommendation
         # get_recommendation(**rec_params)

@@ -383,117 +383,118 @@ def build_workload_profiles(**kwargs):
             return wp_file_list
 
 
-def build_recommendation_payload(**kwargs):
-    output_path = kwargs['output_path']
-    wp_file_list = kwargs['wp_file_list']
-    cloudType = kwargs['cloud_type']
-    storage_capacity = kwargs['storage_capacity']
-    storage_type = kwargs['storage_type']
-    storage_vendor = kwargs['storage_vendor']
-    profile_type = kwargs['profile_type']
-    pct_cpu = kwargs['pct_cpu']
-    pct_mem = kwargs['pct_mem']
-    fttFtmType = kwargs['fttFtmType']
+# def build_recommendation_payload(**kwargs):
+    #  This function takes the final, filtered CSV file from the previous steps and builds a JSON paylod to be submitted to the sizer API
+    # output_path = kwargs['output_path']
+    # wp_file_list = kwargs['wp_file_list']
+    # cloudType = kwargs['cloud_type']
+    # storage_capacity = kwargs['storage_capacity']
+    # storage_type = kwargs['storage_type']
+    # storage_vendor = kwargs['storage_vendor']
+    # profile_type = kwargs['profile_type']
+    # pct_cpu = kwargs['pct_cpu']
+    # pct_mem = kwargs['pct_mem']
+    # fttFtmType = kwargs['fttFtmType']
 
-    print()
-    print('Building sizing request payload')
-    # set configurations for recommendation calculations
-    configurations = {
-        "cloudType": cloudType,
-        "computeOvercommitFactor": 4,
-        "cpuHeadroom": 0.15,
-        "hyperThreadingFactor": 1.25,
-        "memoryOvercommitFactor": 1.25,
-        "cpuUtilization": pct_cpu,
-        "memoryUtilization": pct_mem,
-        "storageThresholdFactor": 0.8,
-        "compressionRatio": 1.25,
-        "dedupRatio": 1.5,
-        "ioAccessPattern": None,
-        "ioSize": None,
-        "ioRatio": None,
-        "totalIOPs": None,
-        "includeManagementVMs": True,
-        "fttFtmType": fttFtmType,
-        "separateClusters": True,
-        "instanceSettingsList": None,
-        "vmOutlierLimits": {
-            "cpuLimit": 0.75,
-            "storageLimit": 0.5,
-            "memoryLimit": 0.75
-        },
-        "applianceSize": "AUTO",
-        "addonsList": []
-    }
+    # print()
+    # print('Building sizing request payload')
+    # # set configurations for recommendation calculations
+    # configurations = {
+    #     "cloudType": cloudType,
+    #     "computeOvercommitFactor": 4,
+    #     "cpuHeadroom": 0.15,
+    #     "hyperThreadingFactor": 1.25,
+    #     "memoryOvercommitFactor": 1.25,
+    #     "cpuUtilization": pct_cpu,
+    #     "memoryUtilization": pct_mem,
+    #     "storageThresholdFactor": 0.8,
+    #     "compressionRatio": 1.25,
+    #     "dedupRatio": 1.5,
+    #     "ioAccessPattern": None,
+    #     "ioSize": None,
+    #     "ioRatio": None,
+    #     "totalIOPs": None,
+    #     "includeManagementVMs": True,
+    #     "fttFtmType": fttFtmType,
+    #     "separateClusters": True,
+    #     "instanceSettingsList": None,
+    #     "vmOutlierLimits": {
+    #         "cpuLimit": 0.75,
+    #         "storageLimit": 0.5,
+    #         "memoryLimit": 0.75
+    #     },
+    #     "applianceSize": "AUTO",
+    #     "addonsList": []
+    # }
 
-    # set host type based on cloud type
-    match cloudType:
-        case "GCVE":
-            pass
-        case "VMC_ON_AWS":
-            hostType = kwargs['host_type']
-            clusterType = kwargs['cluster_type']            
-            configurations["sddcHostType"] = hostType
-            configurations["clusterType"] = clusterType
+    # # set host type based on cloud type
+    # match cloudType:
+    #     case "GCVE":
+    #         pass
+    #     case "VMC_ON_AWS":
+    #         hostType = kwargs['host_type']
+    #         clusterType = kwargs['cluster_type']            
+    #         configurations["sddcHostType"] = hostType
+    #         configurations["clusterType"] = clusterType
     
-    # build json objects for recommendation payload
-    workloadProfiles = []
+    # # build json objects for recommendation payload
+    # workloadProfiles = []
 
-    # build the sizerRequest payload, using exported files (from above) to populate the workload profiles
-    for file in wp_file_list:
-        vm_data_df = pd.read_csv(f'{output_path}{file}')
+    # # build the sizerRequest payload, using exported files (from above) to populate the workload profiles
+    # for file in wp_file_list:
+    #     vm_data_df = pd.read_csv(f'{output_path}{file}')
 
-        # build the profiles
-        profile = {}
-        profile["profileName"] = file
-        profile['separateCluster'] = True
-        profile["isEnabled"] = True
-        profile["workloadProfileType"] = profile_type
-        profile["storagePreference"] = storage_type
-        print(f'Using preferred storage type of: {profile["storagePreference"]}')
-        profile["extStorageVendorType"] = storage_vendor
+    #     # build the profiles
+    #     profile = {}
+    #     profile["profileName"] = file
+    #     profile['separateCluster'] = True
+    #     profile["isEnabled"] = True
+    #     profile["workloadProfileType"] = profile_type
+    #     profile["storagePreference"] = storage_type
+    #     print(f'Using preferred storage type of: {profile["storagePreference"]}')
+    #     profile["extStorageVendorType"] = storage_vendor
 
-        vmList = []
+    #     vmList = []
 
-        for ind in vm_data_df.index:
-            VMInfo = {}
-            VMInfo["vmComputeInfo"] = {}
-            VMInfo["vmMemoryInfo"] = {}
-            VMInfo["vmStorageInfo"] = {}   
-            VMInfo["vmId"] = str(vm_data_df['vmId'][ind])
-            VMInfo["vmName"] = str(vm_data_df['vmName'][ind])
-            VMInfo["vmComputeInfo"]["vCpu"] = int(vm_data_df['vCpu'][ind])
-            VMInfo["vmMemoryInfo"]["vRam"] = int(vm_data_df['vRam'][ind])
-            if 'readIOPS' in vm_data_df:
-                VMInfo["vmStorageInfo"]["readIOPS"] = int(vm_data_df['readIOPS'][ind])
-                VMInfo["vmStorageInfo"]["writeIOPS"] = int(vm_data_df['writeIOPS'][ind])
-                VMInfo["vmStorageInfo"]["peakReadIOPS"] = int(vm_data_df['peakReadIOPS'][ind])
-                VMInfo["vmStorageInfo"]["peakWriteIOPS"] = int(vm_data_df['peakWriteIOPS'][ind])
-                VMInfo["vmStorageInfo"]["readThroughput"] = int(vm_data_df['readThroughput'][ind])
-                VMInfo["vmStorageInfo"]["writeThroughput"] = int(vm_data_df['writeThroughput'][ind])
-                VMInfo["vmStorageInfo"]["peakReadThroughput"] = int(vm_data_df['peakReadThroughput'][ind])
-                VMInfo["vmStorageInfo"]["peakWriteThroughput"] = int(vm_data_df['peakWriteThroughput'][ind])
-            else:
-                pass
-            match storage_capacity:
-                case "PROVISIONED":
-                    VMInfo["vmStorageInfo"]["vmdkTotal"] = int(vm_data_df['vmdkTotal'][ind])
-                    VMInfo["vmStorageInfo"]["vmdkUsed"] = int(vm_data_df['vmdkTotal'][ind])
-                case "UTILIZED":
-                    VMInfo["vmStorageInfo"]["vmdkTotal"] = int(vm_data_df['vmdkUsed'][ind])
-                    VMInfo["vmStorageInfo"]["vmdkUsed"] = int(vm_data_df['vmdkUsed'][ind])
-            vmList.append(VMInfo)
+    #     for ind in vm_data_df.index:
+    #         VMInfo = {}
+    #         VMInfo["vmComputeInfo"] = {}
+    #         VMInfo["vmMemoryInfo"] = {}
+    #         VMInfo["vmStorageInfo"] = {}   
+    #         VMInfo["vmId"] = str(vm_data_df['vmId'][ind])
+    #         VMInfo["vmName"] = str(vm_data_df['vmName'][ind])
+    #         VMInfo["vmComputeInfo"]["vCpu"] = int(vm_data_df['vCpu'][ind])
+    #         VMInfo["vmMemoryInfo"]["vRam"] = int(vm_data_df['vRam'][ind])
+    #         if 'readIOPS' in vm_data_df:
+    #             VMInfo["vmStorageInfo"]["readIOPS"] = int(vm_data_df['readIOPS'][ind])
+    #             VMInfo["vmStorageInfo"]["writeIOPS"] = int(vm_data_df['writeIOPS'][ind])
+    #             VMInfo["vmStorageInfo"]["peakReadIOPS"] = int(vm_data_df['peakReadIOPS'][ind])
+    #             VMInfo["vmStorageInfo"]["peakWriteIOPS"] = int(vm_data_df['peakWriteIOPS'][ind])
+    #             VMInfo["vmStorageInfo"]["readThroughput"] = int(vm_data_df['readThroughput'][ind])
+    #             VMInfo["vmStorageInfo"]["writeThroughput"] = int(vm_data_df['writeThroughput'][ind])
+    #             VMInfo["vmStorageInfo"]["peakReadThroughput"] = int(vm_data_df['peakReadThroughput'][ind])
+    #             VMInfo["vmStorageInfo"]["peakWriteThroughput"] = int(vm_data_df['peakWriteThroughput'][ind])
+    #         else:
+    #             pass
+    #         match storage_capacity:
+    #             case "PROVISIONED":
+    #                 VMInfo["vmStorageInfo"]["vmdkTotal"] = int(vm_data_df['vmdkTotal'][ind])
+    #                 VMInfo["vmStorageInfo"]["vmdkUsed"] = int(vm_data_df['vmdkTotal'][ind])
+    #             case "UTILIZED":
+    #                 VMInfo["vmStorageInfo"]["vmdkTotal"] = int(vm_data_df['vmdkUsed'][ind])
+    #                 VMInfo["vmStorageInfo"]["vmdkUsed"] = int(vm_data_df['vmdkUsed'][ind])
+    #         vmList.append(VMInfo)
 
-        profile['vmList'] = vmList
-        workloadProfiles.append(profile)
+    #     profile['vmList'] = vmList
+    #     workloadProfiles.append(profile)
 
-    sizerRequest = {
-        "configurations": configurations,
-        "workloadProfiles": workloadProfiles
-        }
+    # sizerRequest = {
+    #     "configurations": configurations,
+    #     "workloadProfiles": workloadProfiles
+    #     }
 
 
-    with open("output/custom_recommendation_request.txt", "w") as f:
-        print(json.dumps(sizerRequest, indent=2), file=f)
+    # with open("output/custom_recommendation_request.txt", "w") as f:
+    #     print(json.dumps(sizerRequest, indent=2), file=f)
  
-    return json.dumps(sizerRequest)
+    # return json.dumps(sizerRequest)
