@@ -8,10 +8,7 @@
 
 import sys
 import json
-# removed from project 
-# from sizer_json import parse_excel_api, get_pdf_api, get_recommendation_api
-from data_transform import data_describe, lova_conversion, rvtools_conversion, ps_filter, exclude_workloads, include_workloads, build_workload_profiles, build_recommendation_payload
-from sizer_output import recommendation_transformer, csv_output, excel_output, pdf_output, powerpoint_output, terminal_output 
+from data_transform import data_describe, lova_conversion, rvtools_conversion, ps_filter, exclude_workloads, include_workloads, build_workload_profiles
 
 
 def describe_import(**kwargs):
@@ -39,37 +36,6 @@ def describe_import(**kwargs):
     sys.exit(0)
 
 
-# def default_import_sizing(**kwargs):
-#     '''Triggered when user selects "default sizing" using an import file"'''
-#     print("Using default parameters for sizing calculations.")
-#     input_path = kwargs['input_path']
-#     ft = kwargs['file_type']
-#     fn = kwargs['file_name']
-#     options = ['vm_placement', 'calculation_logs', 'output_format']
-
-#     rec_params = {}
-#     for i in options:
-#         if i in kwargs:
-#             option = kwargs[i]
-#         else:
-#             option = None
-#         rec_params[i] = option
-
-#     default_params = {"file_type":ft, "input_path":input_path, "file_name":fn}
-#     vms_json = parse_excel_api(**default_params)
-#     if vms_json is not None:
-#         sizer_request = json.dumps(vms_json['response']['sizerRequest'], indent=2)
-#         with open("output/default_recommendation_request.txt", "w") as f:
-#             print(sizer_request, file=f)
-#         rec_params['sizer_request'] = sizer_request
-#         get_recommendation(**rec_params)
-
-#     else:
-#         print()
-#         print("Something went wrong.  Please check your syntax and try again.")
-#         sys.exit(1)
-
-
 def prepare_import(**kwargs):
     ft = kwargs['file_type']
     fn = kwargs['file_name']
@@ -78,35 +44,14 @@ def prepare_import(**kwargs):
 
     # the following parameters will be used to build the payload contained in the 
     storage_capacity = kwargs['storage_capacity']
-    pct_cpu = kwargs['percent_cpu']
-    pct_mem = kwargs['percent_memory']
-
-    # cloud_type = kwargs['cloud_type']
-    # cluster_type = kwargs['cluster_type']
-    # host_type = kwargs['host_type']
-    # storage_type = kwargs['storage_type']
-    # storage_vendor = kwargs['storage_vendor']
-    # profile_type = kwargs['profile_type']
-    # fttFtmType = kwargs['data_protection']
 
     # build the payload parameter dictionary
     payload_params = {
         "output_path":output_path,
         "storage_capacity":storage_capacity,
-        "pct_cpu":pct_cpu,
-        "pct_mem":pct_mem,
-        # "cloud_type":cloud_type,
-        # "host_type": host_type,
-        # "cluster_type":cluster_type,
-        # "storage_type":storage_type,
-        # "storage_vendor":storage_vendor,
-        # "profile_type":profile_type,
-        # "cloudType":cloud_type,
-        # "fttFtmType":fttFtmType
         }
 
     # build the parameter dictionary for getting the recommendation
-    # options = ['vm_placement', 'calculation_logs', 'output_format']
     options = ['output_format']
     rec_params = {}
     for i in options:
@@ -179,74 +124,7 @@ def prepare_import(**kwargs):
         print()
         for file in wp_file_list:
             print(file)
-
-        # # add the list of files including the workloads to the payload parameter dictionary
-        # payload_params['wp_file_list'] = wp_file_list
-
-        # # build the recommendation payload
-        # sizer_request = build_recommendation_payload(**payload_params)
-
-        # # include the recommendation payload in the sizing request for the sizer
-        # rec_params['sizer_request'] = sizer_request
-
-        # get the recommendation
-        # get_recommendation(**rec_params)
     
     else:
         print("Something went wrong.  Please check your syntax and try again.")
         sys.exit(1)
-
-
-# def get_recommendation(**kwargs):
-#     # take parsed / transformed data and get recommendation.
-#     sizer_request = kwargs['sizer_request']
-
-#     vp = kwargs['vm_placement']
-#     cl = kwargs['calculation_logs']
-#     output_format = kwargs['output_format']
-
-#     rec_params = {}
-#     rec_params['vp'] = vp
-#     rec_params["json_data"] = sizer_request
-
-#     json_raw = get_recommendation_api(**rec_params)
-#     if json_raw is None:
-#         print("Something went wrong.  Please check your syntax and try again.")
-#         sys.exit(1)
-#     else:
-#         pass
-
-#     # strip calculations out of the json, store for later use
-#     calcs = json_raw["calculationLog"]
-#     del json_raw["calculationLog"]
-
-#     # strip assumptions out of the json, store for later use
-#     assumps = json_raw["sizingAssumtions"]
-#     del json_raw["sizingAssumtions"]
-
-#     # take the rest of the json output and transform it
-#     output_json = recommendation_transformer(json_raw)
-#     output_params = {"recommendation":output_json, "calcs":calcs,"assumps":assumps,"cl":cl}
-#     match output_format:
-#         case "csv":
-#             print("Exporting recommendation to CSV.")
-#             print()
-#             print("enabled in a future release.")
-
-#         case "pdf":
-#             print("Exporting recommendation to PDF.")
-#             print()
-#             pdf_content = get_pdf_api(**rec_params)
-#             pdf_output(pdf_content)
-            
-#         case "ppt":
-#             print("Exporting recommendation to PowerPoint.")
-#             print()
-#             print("enabled in a future release.")
-
-#         case "xls":
-#             print("Exporting recommendation to Excel.")
-#             print()
-#             print("enabled in a future release.")
-
-#     terminal_output(**output_params)

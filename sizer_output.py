@@ -8,7 +8,6 @@
 
 import json
 import pandas as pd
-from pandas import json_normalize
 from prettytable import PrettyTable
 import time
 
@@ -26,88 +25,6 @@ def generate_table(results):
     for dct in results:
         table.add_row([dct.get(c, "") for c in keyslist])
     return table
-
-
-def recommendation_transformer(json_data):
-    '''Extracts the data from the recommendation into discrete dataframes / arrays to be displayed on the screen.'''
-    # create dict for SDDC overview
-    if json_data['sddcList'][0]['clusterList']['sazClusters'] is None:
-        cluster_type = 'mazClusters'
-    else:
-        cluster_type = 'sazClusters'
-
-    overview_df = pd.json_normalize(json_data['sddcList'][0]['clusterList'][cluster_type]['hostBreakupList'][0])
-    overview_df = overview_df.transpose()
-
-    # strip external storage out of the json, store for later use
-    if not json_data['sddcList'][0]['externalStorageList']:
-        ext_storage_df = None
-    else:
-        ext_storage_df = pd.json_normalize(json_data['sddcList'][0]['externalStorageList'][0])
-        ext_storage_df = ext_storage_df.transpose()
-
-    # extract vm exceptions
-    if 'vmExceptions' in json_data['sddcList'][0]:
-        vm_exceptions = (json_data['sddcList'][0]['vmExceptions']['vmExceptionInfo'])
-        limited_compat = (json_data['sddcList'][0]['vmExceptions']['limitedHostCompatibility'])
-    else:
-        vm_exceptions = None
-        limited_compat = None
-
-    #create array objects to be returned
-    cluster_json = {}
-    vm_json = {}
-
-    #extract clusters and virtual machines into separate arrays
-    clusters = (json_data['sddcList'][0]['clusterList'][cluster_type]['clusterInfoList'])
-    for count, cluster in enumerate(clusters, start=0):
-        cluster_id = f'cluster_{count}'
-        df_host_list = pd.json_normalize(cluster, record_path =['hostList'], max_level=1)
-        df_host_list.drop('vmList', axis=1, inplace=True)
-        cluster_json[cluster_id] = df_host_list
-
-        #enumerate VMs in the cluster
-        vm_list = []
-        hosts = (json_data['sddcList'][0]['clusterList'][cluster_type]['clusterInfoList'][count]['hostList'])
-        for hostcount, host in enumerate(hosts):
-            vms = (json_data['sddcList'][0]['clusterList'][cluster_type]['clusterInfoList'][count]['hostList'][hostcount]['vmList'])
-            if vms is not None:
-                for vmcount, vm in enumerate(vms):
-                    vm_list.append(vm['vmName'])
-        vm_json[cluster_id] = vm_list
-
-    output_array = {}
-    output_array["overview"] = overview_df
-    output_array["ext_storage"] = ext_storage_df
-    output_array["cluster_json"] = cluster_json
-    output_array["vm_json"] = vm_json
-    output_array['vm_exceptions'] = vm_exceptions
-    output_array['limited_compat'] = limited_compat
-
-    return output_array
-
-
-def csv_output(**kwargs):
-    print()
-    print("enabled in a future release.")
-
-
-def excel_output(**kwargs):
-    print()
-    print("enabled in a future release.")
-
-
-def pdf_output(pdf_content):
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-    file_name = f'VMC_Sizer_report_{timestr}.pdf'
-    with open(f'output/{file_name}', 'wb') as f:
-        f.write(pdf_content)
-    return file_name
-
-
-def powerpoint_output(**kwargs):
-    print()
-    print("enabled in a future release.")
 
 
 def terminal_output(**kwargs):
