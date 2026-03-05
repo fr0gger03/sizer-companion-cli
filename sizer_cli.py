@@ -51,7 +51,6 @@ def main():
     # parent_sizing_parser.add_argument('-cluster', '--cluster_type', nargs = '?', choices=['SAZ','MAZ'], default = "SAZ", type=str.upper, help="Use to specify single AZ (SAZ) or stretched cluster (MAZ). Default is SAZ")
     # parent_sizing_parser.add_argument('-vp', '--vm_placement', action= "store_true", help="Use to show vm placement. Use to include VM placement data.")
     # parent_sizing_parser.add_argument('-logs', '--calculation_logs', action= "store_true", help="Use to show calculation logs. Default is False - results will not, by default, show calculation logs.")
-    # parent_sizing_parser.add_argument('-o', '--output_format', choices=['csv', 'pdf', 'ppt', 'xls'], help="Select output format Default is none.")
 
 # ============================
 # Subparsers for individual commands
@@ -74,9 +73,10 @@ def main():
     custom_sizing_parser.add_argument('-ps', '--power_state',  choices = ['p', 'ps'], type=str.lower, help = "By default, all VM are included regardless of powere state. Use to specify whether to include only those (p)owered on, or powered on and suspended (ps).")
     custom_sizing_parser.add_argument('-wp', '--workload_profiles', choices=['all_clusters', 'some_clusters', 'os','vmName'], help = "Use to create workload profiles based on the selected grouping.")
     custom_sizing_parser.add_argument('-pl', '--profile_list', nargs = '+', help = 'A space-separated list of text strings used to filter workloads for the creation of workload profiles.')
-    # custom_sizing_parser.add_argument('-pt', '--profile_type', nargs = '?', choices = ['GPW_GVM','DBW_ORA','DBW_SQL','VDW_FCL','VDW_ICL'], default = "GPW_GVM", type=str.upper, help = 'Type of workload profile (default = GPW_GVM).')
     custom_sizing_parser.add_argument('-ir', '--include_remaining', action= 'store_true', help= 'Use to indicate you wish to keep remaining workloads - default is to discard.')   
     custom_sizing_parser.add_argument('-sc', '--storage_capacity', nargs = '?', choices=['PROVISIONED', 'UTILIZED'], default = "UTILIZED", type=str.upper, help="Use to specify whether PROVISIONED or UTILIZED storage is used (default is UTILIZED).")
+    custom_sizing_parser.add_argument('-o', '--output_format', choices=['csv', 'pdf', 'ppt', 'xls', 'terminal'], default = "csv", help="Select output format Default is csv.")
+    # custom_sizing_parser.add_argument('-pt', '--profile_type', nargs = '?', choices = ['GPW_GVM','DBW_ORA','DBW_SQL','VDW_FCL','VDW_ICL'], default = "GPW_GVM", type=str.upper, help = 'Type of workload profile (default = GPW_GVM).')
     # custom_sizing_parser.add_argument('-st', '--storage_type', nargs = '?', choices=['vSAN_EXT_STORAGE','vSAN_ONLY','EXT_STORAGE_ONLY'], default = "vSAN_ONLY", help="Use to specify vSAN only, external storage, or combination (default = vSAN_ONLY).")
     # custom_sizing_parser.add_argument('-sv', '--storage_vendor', nargs = '?', choices=['FSX_N','VMC_FS','AUTO'], default = "AUTO", type=str.upper, help="Use to specify FSX for NetApp OnTap or VMW Cloud Flex Storage is preferred for external capacity (default=VMC_FS).")
     # custom_sizing_parser.add_argument('-pct_cpu', '--percent_cpu', default= .3, help= "The percent cpu utilization to use for modeling, expressed as a decimal (i.e. use '1' for 100, or '.3' for 30, etc")
