@@ -34,20 +34,20 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "certifi", specifier = ">=2025.1.31" },
-    { name = "charset-normalizer", specifier = ">=3.4.1" },
+    { name = "certifi", specifier = ">=2026.2.25" },
+    { name = "charset-normalizer", specifier = ">=3.4.4" },
     { name = "et-xmlfile", specifier = ">=2.0.0" },
     { name = "idna", specifier = ">=3.10" },
-    { name = "numpy", specifier = ">=2.2.2" },
-    { name = "openpyxl", specifier = ">=3.1.2" },
-    { name = "pandas", specifier = ">=2.2.3" },
-    { name = "prettytable", specifier = ">=3.7.0" },
-    { name = "python-dateutil", specifier = ">=2.9.0.post0" },
+    { name = "numpy", specifier = ">=2.4.2" },
+    { name = "openpyxl", specifier = ">=3.1.5" },
+    { name = "pandas", specifier = ">=3.0.1" },
+    { name = "prettytable", specifier = ">=3.14.0" },
+    { name = "python-dateutil", specifier = ">=2.9.0" },
     { name = "pytz", specifier = ">=2025.1" },
-    { name = "requests", specifier = ">=2.31.0" },
+    { name = "requests", specifier = ">=2.32.3" },
     { name = "six", specifier = ">=1.17.0" },
     { name = "tzdata", specifier = ">=2025.1" },
-    { name = "urllib3", specifier = ">=1.26.18" },
+    { name = "urllib3", specifier = ">=2.3.0" },
     { name = "wcwidth", specifier = ">=0.2.13" },
 ]
 
