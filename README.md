@@ -34,7 +34,9 @@ pip install -r requirements.txt
 
 ## Usage
 
-Place your unmodified RVTools or LiveOptics `.xlsx` file(s) in the `input/` directory, then run one of the subcommands below. Output files are written to the `output/` directory.
+Place your **unmodified** RVTools or LiveOptics `.xlsx` file(s) in the `input/` directory, then run one of the subcommands below. Output files are written to the `output/` directory.
+
+**NOTE** - if you have python 3.12 or later installed you should be ale to run the script directly without the use of 'uv'
 
 ### Describe
 
