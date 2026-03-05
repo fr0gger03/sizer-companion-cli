@@ -39,35 +39,35 @@ def describe_import(**kwargs):
     sys.exit(0)
 
 
-def default_import_sizing(**kwargs):
-    '''Triggered when user selects "default sizing" using an import file"'''
-    print("Using default parameters for sizing calculations.")
-    input_path = kwargs['input_path']
-    ft = kwargs['file_type']
-    fn = kwargs['file_name']
-    options = ['vm_placement', 'calculation_logs', 'output_format']
+# def default_import_sizing(**kwargs):
+#     '''Triggered when user selects "default sizing" using an import file"'''
+#     print("Using default parameters for sizing calculations.")
+#     input_path = kwargs['input_path']
+#     ft = kwargs['file_type']
+#     fn = kwargs['file_name']
+#     options = ['vm_placement', 'calculation_logs', 'output_format']
 
-    rec_params = {}
-    for i in options:
-        if i in kwargs:
-            option = kwargs[i]
-        else:
-            option = None
-        rec_params[i] = option
+#     rec_params = {}
+#     for i in options:
+#         if i in kwargs:
+#             option = kwargs[i]
+#         else:
+#             option = None
+#         rec_params[i] = option
 
-    default_params = {"file_type":ft, "input_path":input_path, "file_name":fn}
-    vms_json = parse_excel_api(**default_params)
-    if vms_json is not None:
-        sizer_request = json.dumps(vms_json['response']['sizerRequest'], indent=2)
-        with open("output/default_recommendation_request.txt", "w") as f:
-            print(sizer_request, file=f)
-        rec_params['sizer_request'] = sizer_request
-        get_recommendation(**rec_params)
+#     default_params = {"file_type":ft, "input_path":input_path, "file_name":fn}
+#     vms_json = parse_excel_api(**default_params)
+#     if vms_json is not None:
+#         sizer_request = json.dumps(vms_json['response']['sizerRequest'], indent=2)
+#         with open("output/default_recommendation_request.txt", "w") as f:
+#             print(sizer_request, file=f)
+#         rec_params['sizer_request'] = sizer_request
+#         get_recommendation(**rec_params)
 
-    else:
-        print()
-        print("Something went wrong.  Please check your syntax and try again.")
-        sys.exit(1)
+#     else:
+#         print()
+#         print("Something went wrong.  Please check your syntax and try again.")
+#         sys.exit(1)
 
 
 def custom_import_sizing(**kwargs):

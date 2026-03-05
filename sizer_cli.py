@@ -25,8 +25,8 @@ def main():
     This tool is used to help you prepare raw data from your customer for the ACC Sizer quickly and reliably, with a number of available options.
     The script acn be used to import data from from either RVTools or LiveOptics (DO NOT MODIFY the original files).  Common use cases are to quickly include or exclude
     powered-off virtual machines, specific clusters or virtual machines by naming patterns, etc.  Further it will normalize the data from either RV Tools or LiveOptics
-    into a common set of inputs ready for the sizer tools. 
-    Please do not edit or modify the source RV Tools or LiveOptics file(s) in any way - the tool depends on original file structure for the functions to work.
+    into a common set of inputs ready for the sizer tools. \n\n
+    Please do not edit or modify the source RV Tools or LiveOptics file(s) in any way - the tool depends on original file structure for the functions to work. \n\n
     Use arguments at the command line to transform the data before you receive your sizing!\n\n
     ''')
 
@@ -61,8 +61,8 @@ def main():
     describe_parser = subparsers.add_parser('describe', formatter_class=MyFormatter, parents=[parent_import_parser], help='Describe the contents of an imported file.')
     describe_parser.set_defaults(func = describe_import)
 
-    default_sizing_parser = subparsers.add_parser('default', formatter_class=MyFormatter, parents=[parent_import_parser], help='Import a file and receive a sizing recommendation without transforming data.')
-    default_sizing_parser.set_defaults(func = default_import_sizing)
+    # default_sizing_parser = subparsers.add_parser('default', formatter_class=MyFormatter, parents=[parent_import_parser], help='Import a file and receive a sizing recommendation without transforming data.')
+    # default_sizing_parser.set_defaults(func = default_import_sizing)
 
     custom_sizing_parser = subparsers.add_parser('custom', formatter_class=MyFormatter, parents=[parent_import_parser], help='Import a file and transform the data before receiving a sizing recommendation.')
     # custom_sizing_parser = subparsers.add_parser('custom', formatter_class=MyFormatter, help='Import a file and transform the data before receiving a sizing recommendation.')
