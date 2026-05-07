@@ -317,7 +317,7 @@ def build_workload_profiles(**kwargs):
         profile_list = kwargs['profile_list']
 
     print()
-    print(f'Separating workloads into profiles based on {profile_config}')
+    print(f'Separating workloads into profiles based on "{profile_config}"')
     #create list for storing file names
     wp_file_list = []
 
@@ -376,6 +376,6 @@ def build_workload_profiles(**kwargs):
                 vm_data_df_trimmed = vm_data_df[~vm_data_df['vmName'].str.contains(pattern, case=False)]
                 vm_data_df_trimmed.to_csv(f'{output_path}5_vmName_remainder.csv')
                 wp_file_list.append('5_vmName_remainder.csv')
-    print(wp_file_list)
+    # print(wp_file_list)
     return wp_file_list
 

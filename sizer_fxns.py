@@ -114,17 +114,23 @@ def prepare_import(**kwargs):
         else:
             pass
 
-        # ensure either the last processed csv_file OR the list of workload profiles is stored as a common vairable to be used in the payload parameter dictionary
+        # ensure either the last processed csv_file OR the list of workload profiles is stored as a common variable to be used in the payload parameter dictionary
         if len(wp_file_list) == 0:
             wp_file_list = [csv_file]
         else:
             pass
         
-        print("Your data is prepped - please find the following files in the 'output' directory:")
+        print("Your data is prepped...")
         print()
         for file in wp_file_list:
-            print(file)
-    
+            print(f'Here is a summary of profile {file} - you may find the CSV in the "Output" directory:') 
+            data_describe(output_path,file)
+            print()
+            print()
     else:
+        print()
         print("Something went wrong.  Please check your syntax and try again.")
         sys.exit(1)
+    sys.exit(0)
+
+
