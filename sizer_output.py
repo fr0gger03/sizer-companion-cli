@@ -8,24 +8,24 @@
 
 import json
 import pandas as pd
-from prettytable import PrettyTable
+from rich.table import Table
 import time
 
+
 def generate_table(results):
-    """Generates a 'prettytable' using a JSON payload; automatically uses the dictionary keys in the payload as column headers."""
-    # if type(results) is list:
-    if type(results) is list:
-        keyslist = list(results[0].keys())
-    elif type(results) is dict:
-        keyslist = list(results.keys())
+    if isinstance(results, list):
+        keys = list(results[0].keys())
+    elif isinstance(results, dict):
+        keys = list(results.keys())
     else:
-            return False
+        return None
 
-    table = PrettyTable(keyslist)
+    table = Table()
+    for key in keys:
+        table.add_column(key)
     for dct in results:
-        table.add_row([dct.get(c, "") for c in keyslist])
+        table.add_row(*[str(dct.get(c, "")) for c in keys])
     return table
-
 
 def terminal_output(**kwargs):
     calcs = kwargs['calcs']
