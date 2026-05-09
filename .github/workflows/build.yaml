@@ -30,6 +30,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
@@ -40,7 +41,7 @@ jobs:
       - name: Build Executable
         uses: Nuitka/Nuitka-Action@v1.4
         with:
-          nuitka-version: main
+          nuitka-version: 2.7
           script-name: sizer_cli.py
           mode: onefile
 
