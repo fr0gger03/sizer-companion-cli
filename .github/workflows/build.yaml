@@ -11,16 +11,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # We define the OS and the expected file extension here
         include:
           - os: ubuntu-latest
-            artifact_name: sizer_cli
+            artifact_name: sizer_cli.bin
             asset_name: sizer-linux
           - os: windows-latest
             artifact_name: sizer_cli.exe
             asset_name: sizer-windows.exe
           - os: macos-latest
-            artifact_name: sizer_cli
+            artifact_name: sizer_cli.bin
             asset_name: sizer-macos
 
     steps:
@@ -35,22 +34,21 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
-          # Install your project's specific requirements if they exist
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -r requirements.txt
         shell: bash
 
       - name: Build Executable
-        run: |
-          pyinstaller --onefile sizer_cli.py
+        uses: Nuitka/Nuitka-Action@v1.4
+        with:
+          nuitka-version: main
+          script-name: sizer_cli.py
+          mode: onefile
 
       - name: Upload Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          # Use the artifact_name from the matrix to find the file
-          file: dist/${{ matrix.artifact_name }}
-          # Use the asset_name from the matrix for the download link
+          file: build/${{ matrix.artifact_name }}
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
           overwrite: true
