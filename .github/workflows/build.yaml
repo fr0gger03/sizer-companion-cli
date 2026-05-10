@@ -45,6 +45,10 @@ jobs:
           script-name: sizer_cli.py
           mode: onefile
 
+      - name: Smoke test
+        run: ./build/${{ matrix.artifact_name }} --help
+        shell: bash
+
       - name: Upload Release
         uses: svenstaro/upload-release-action@v2
         with:

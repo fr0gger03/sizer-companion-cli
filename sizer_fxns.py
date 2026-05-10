@@ -6,9 +6,22 @@
 ### SPDX-License-Identifier: MIT License
 ################################################################################
 
+import os
 import sys
 import json
 from data_transform import data_describe, lova_conversion, rvtools_conversion, ps_filter, exclude_workloads, include_workloads, build_workload_profiles
+
+
+def validate_inputs(input_path, file_names):
+    """Validate that the input directory and all input files exist."""
+    if not os.path.isdir(input_path):
+        print(f"Error: Input directory '{input_path}' does not exist or is not a directory.")
+        sys.exit(1)
+    for fn in file_names:
+        fp = os.path.join(input_path, fn)
+        if not os.path.isfile(fp):
+            print(f"Error: Input file '{fp}' not found.")
+            sys.exit(1)
 
 
 def describe_import(**kwargs):
@@ -18,6 +31,9 @@ def describe_import(**kwargs):
     ft = kwargs['file_type']
     fn = kwargs['file_name']
     output_path = kwargs['output_path']
+
+    validate_inputs(input_path, fn)
+    os.makedirs(output_path, exist_ok=True)
 
     view_params = {"input_path":input_path,"file_name":fn, "output_path":output_path}
     
@@ -41,6 +57,9 @@ def prepare_import(**kwargs):
     fn = kwargs['file_name']
     input_path = kwargs['input_path']
     output_path = kwargs['output_path']
+
+    validate_inputs(input_path, fn)
+    os.makedirs(output_path, exist_ok=True)
 
     # the following parameters will be used to build the payload contained in the 
     storage_capacity = kwargs['storage_capacity']

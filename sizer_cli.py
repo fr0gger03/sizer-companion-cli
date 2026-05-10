@@ -8,6 +8,7 @@
 
 import argparse
 from argparse import SUPPRESS
+import os
 import sys
 from sizer_fxns import describe_import, prepare_import
 
@@ -37,8 +38,10 @@ def main():
 # Parent parser containing arguments for all import operations
 # ============================
     parent_import_parser = argparse.ArgumentParser(add_help=False)
-    parent_import_parser.add_argument('-fn', '--file_name', nargs='*', required=True, help="A space-separated list of file names containing the VM inventory to be imported; all files must be of the same type (LiveOptics or RVTools).  By default, this script looks for the file in the 'input' subdirectory.")
+    parent_import_parser.add_argument('-fn', '--file_name', nargs='*', required=True, help="A space-separated list of file names containing the VM inventory to be imported; all files must be of the same type (LiveOptics or RVTools).  Files are read from the directory specified by --input_dir (default: ./input/).")
     parent_import_parser.add_argument('-ft', '--file_type', required=True, choices=['rv-tools', 'live-optics'], type=str.lower, help="Specify either 'live-optics' or 'rv-tools'")
+    parent_import_parser.add_argument('-id', '--input_dir', default=os.path.join('.', 'input'), help="Directory containing input files (default: ./input/).")
+    parent_import_parser.add_argument('-od', '--output_dir', default=os.path.join('.', 'output'), help="Directory for output files (default: ./output/).")
 
 
 # ============================
@@ -76,8 +79,8 @@ def main():
         pass
 
     params = vars(args)
-    params.update({"input_path": 'input/'})
-    params.update({"output_path": 'output/'})
+    params['input_path'] = params.pop('input_dir')
+    params['output_path'] = params.pop('output_dir')
 
     # Call the appropriate function with the dictionary containing the arguments.
     args.func(**params)

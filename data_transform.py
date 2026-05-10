@@ -7,6 +7,7 @@
 ################################################################################
 
 import json
+import os
 import pandas as pd
 from pandas import json_normalize
 import sys
@@ -37,7 +38,7 @@ def df_to_table(df, title=None):
 
 def data_describe(output_path, csv_file):
     console = Console()
-    vm_data_df = pd.read_csv(f'{output_path}{csv_file}', index_col=0)
+    vm_data_df = pd.read_csv(os.path.join(output_path, csv_file), index_col=0)
     vm_data_df['os'] = vm_data_df['os'].astype(str)
 
     # --- Overview ---
@@ -105,7 +106,7 @@ def lova_conversion(**kwargs):
 
     df_list = []
     for file in file_name:
-        file_df = pd.read_excel(f'{input_path}{file}', sheet_name="VMs")
+        file_df = pd.read_excel(os.path.join(input_path, file), sheet_name="VMs")
         df_list.append(file_df)
     vmdata_df = pd.concat(df_list, axis=0, ignore_index=True)
 
@@ -161,7 +162,7 @@ def lova_conversion(**kwargs):
     # pull in rows from VM Performance for storage performance metrics
     diskperf_list = []
     for file in file_name:
-        disk_df = pd.read_excel(f'{input_path}{file}', sheet_name = 'VM Performance')
+        disk_df = pd.read_excel(os.path.join(input_path, file), sheet_name='VM Performance')
         diskperf_list.append(disk_df)
     diskperf_df = pd.concat(diskperf_list, axis=0, ignore_index=True)
 
@@ -181,7 +182,7 @@ def lova_conversion(**kwargs):
 
     vm_consolidated = pd.merge(vmdata_df, diskperf_df, on = "vmId", how = "left")
 
-    vm_consolidated.to_csv(f'{output_path}1_vmdata_df_lova.csv')
+    vm_consolidated.to_csv(os.path.join(output_path, '1_vmdata_df_lova.csv'))
 
     csv_file = "1_vmdata_df_lova.csv"
     return csv_file
@@ -197,8 +198,8 @@ def rvtools_conversion(**kwargs):
 
     df_list = []
     for file in file_name:
-        print(f'Reading {input_path}{file}')
-        file_df = pd.read_excel(f'{input_path}{file}', sheet_name = 'vInfo')
+        print(f'Reading {os.path.join(input_path, file)}')
+        file_df = pd.read_excel(os.path.join(input_path, file), sheet_name='vInfo')
         df_list.append(file_df)
     vmdata_df = pd.concat(df_list, axis=0, ignore_index=True)
 
@@ -243,7 +244,7 @@ def rvtools_conversion(**kwargs):
     # pull in rows from vDisk for allocated storage
     diskdf_list = []
     for file in file_name:
-        disk_df = pd.read_excel(f'{input_path}{file}', sheet_name = 'vDisk')
+        disk_df = pd.read_excel(os.path.join(input_path, file), sheet_name='vDisk')
         diskdf_list.append(disk_df)
     vdisk_df = pd.concat(diskdf_list, axis=0, ignore_index=True)
     
@@ -266,7 +267,7 @@ def rvtools_conversion(**kwargs):
     # pull in rows from vPartition for consumed storage
     partdf_list = []
     for file in file_name:
-        part_df = pd.read_excel(f'{input_path}{file}', sheet_name = 'vPartition')
+        part_df = pd.read_excel(os.path.join(input_path, file), sheet_name='vPartition')
         partdf_list.append(part_df)
     vpart_df = pd.concat(partdf_list, axis=0, ignore_index=True)
     
@@ -303,7 +304,7 @@ def rvtools_conversion(**kwargs):
     vm_consolidated.loc[vm_consolidated.vmdkTotal == 0, 'vmdkTotal'] = vm_consolidated.vinfo_provisioned
     vm_consolidated.loc[vm_consolidated.vmdkUsed == 0, 'vmdkUsed'] = vm_consolidated.vinfo_used
 
-    vm_consolidated.to_csv(f'{output_path}1_vmdata_df_rvtools.csv')
+    vm_consolidated.to_csv(os.path.join(output_path, '1_vmdata_df_rvtools.csv'))
     csv_file = "1_vmdata_df_rvtools.csv"
     return csv_file
 
@@ -315,7 +316,7 @@ def ps_filter(**kwargs):
 
     print()
     print("Filtering workloads based on power state.")
-    vm_data_df = pd.read_csv(f'{output_path}{csv_file}',index_col=0)
+    vm_data_df = pd.read_csv(os.path.join(output_path, csv_file), index_col=0)
     if power_state == "p":
         vm_data_df_trimmed = vm_data_df[vm_data_df.vmState == "poweredOn"]
     elif power_state == "ps":
@@ -323,7 +324,7 @@ def ps_filter(**kwargs):
     else:
         pass
 
-    vm_data_df_trimmed.to_csv(f'{output_path}2_vmdata_df_power_state.csv')
+    vm_data_df_trimmed.to_csv(os.path.join(output_path, '2_vmdata_df_power_state.csv'))
     csv_file = "2_vmdata_df_power_state.csv"
     return csv_file
 
@@ -336,7 +337,7 @@ def include_workloads(**kwargs):
 
     print()
     print(f'Including only those workloads where {infilf} includes {infil}')
-    vm_data_df = pd.read_csv(f'{output_path}{csv_file}',index_col=0)
+    vm_data_df = pd.read_csv(os.path.join(output_path, csv_file), index_col=0)
 
     if infilf == "vmName":
         print("using exact string match on vmName")
@@ -344,7 +345,7 @@ def include_workloads(**kwargs):
     else:
         pattern = '|'.join(infil)
         vm_data_df_trimmed = vm_data_df[vm_data_df[infilf].str.contains(pattern, case=False) == True]
-    vm_data_df_trimmed.to_csv(f'{output_path}3_vmdata_df_infil.csv')
+    vm_data_df_trimmed.to_csv(os.path.join(output_path, '3_vmdata_df_infil.csv'))
     csv_file = "3_vmdata_df_infil.csv"
     return csv_file
 
@@ -357,7 +358,7 @@ def exclude_workloads(**kwargs):
 
     print()
     print(f'Excluding those workloads where {exfilf} includes {exfil}')
-    vm_data_df = pd.read_csv(f'{output_path}{csv_file}',index_col=0)
+    vm_data_df = pd.read_csv(os.path.join(output_path, csv_file), index_col=0)
 
     if exfilf == "vmName":
         print("using exact string match on vmName")
@@ -365,7 +366,7 @@ def exclude_workloads(**kwargs):
     else:
         pattern = '|'.join(exfil)
         vm_data_df_trimmed = vm_data_df[vm_data_df[exfilf].str.contains(pattern, case=False) == False]
-    vm_data_df_trimmed.to_csv(f'{output_path}4_vmdata_df_exfil.csv')
+    vm_data_df_trimmed.to_csv(os.path.join(output_path, '4_vmdata_df_exfil.csv'))
     csv_file = "4_vmdata_df_exfil.csv"
     return csv_file
 
@@ -382,7 +383,7 @@ def build_workload_profiles(**kwargs):
     #create list for storing file names
     wp_file_list = []
 
-    vm_data_df = pd.read_csv(f'{output_path}{csv_file}',index_col=0)
+    vm_data_df = pd.read_csv(os.path.join(output_path, csv_file), index_col=0)
 
     match profile_config:
         case "all_clusters":
@@ -390,7 +391,7 @@ def build_workload_profiles(**kwargs):
             workload_profiles = vm_data_df.groupby('cluster')
             # save resulting dataframes as csv files 
             for profile, profile_df in workload_profiles:
-                profile_df.to_csv(f'{output_path}5_cluster_{profile}.csv')
+                profile_df.to_csv(os.path.join(output_path, f'5_cluster_{profile}.csv'))
                 wp_file_list.append(f'5_cluster_{profile}.csv')
     
         case "some_clusters":
@@ -400,27 +401,27 @@ def build_workload_profiles(**kwargs):
             # for list of clusters to keep, export to csv
             for profile, profile_df in workload_profiles:
                 if profile in profile_list:
-                    profile_df.to_csv(f'{output_path}5_cluster_{profile}.csv')
+                    profile_df.to_csv(os.path.join(output_path, f'5_cluster_{profile}.csv'))
                     wp_file_list.append(f'5_cluster_{profile}.csv')
 
             # if desired in original DF, drop rows for exported clusters
             if kwargs['include_remaining'] == True:
                 vm_data_df_trimmed = vm_data_df[vm_data_df.cluster.isin(profile_list) == False]
-                vm_data_df_trimmed.to_csv(f'{output_path}5_cluster_remainder.csv')
+                vm_data_df_trimmed.to_csv(os.path.join(output_path, '5_cluster_remainder.csv'))
                 wp_file_list.append('5_cluster_remainder.csv')
 
         case "os":
             print("Creating workload profiles based on GUEST OPERATING SYSTEM using text match.")
             for match_string in profile_list:
                 profile_df = vm_data_df[vm_data_df['os'].str.contains(match_string)]
-                profile_df.to_csv(f'{output_path}5_guest_os_{match_string}.csv')
+                profile_df.to_csv(os.path.join(output_path, f'5_guest_os_{match_string}.csv'))
                 wp_file_list.append(f'5_guest_os_{match_string}.csv')
                 
             # to keep remaining workloads, export all VM NOT matching to remainder CSV
             if kwargs['include_remaining'] == True:
                 pattern = '|'.join(profile_list)
                 vm_data_df_trimmed = vm_data_df[~vm_data_df['os'].str.contains(pattern, case=False)]
-                vm_data_df_trimmed.to_csv(f'{output_path}5_os_remainder.csv')
+                vm_data_df_trimmed.to_csv(os.path.join(output_path, '5_os_remainder.csv'))
                 wp_file_list.append('5_os_remainder.csv')
 
         case "vmName":
@@ -428,14 +429,14 @@ def build_workload_profiles(**kwargs):
 
             for match_string in profile_list:
                 profile_df = vm_data_df[vm_data_df['vmName'].str.contains(match_string)]
-                profile_df.to_csv(f'{output_path}5_vmName_{match_string}.csv')
+                profile_df.to_csv(os.path.join(output_path, f'5_vmName_{match_string}.csv'))
                 wp_file_list.append(f'5_vmName_{match_string}.csv')
 
             # to keep remaining workloads, export all VM NOT matching to remainder CSV
             if kwargs['include_remaining'] == True:
                 pattern = '|'.join(profile_list)
                 vm_data_df_trimmed = vm_data_df[~vm_data_df['vmName'].str.contains(pattern, case=False)]
-                vm_data_df_trimmed.to_csv(f'{output_path}5_vmName_remainder.csv')
+                vm_data_df_trimmed.to_csv(os.path.join(output_path, '5_vmName_remainder.csv'))
                 wp_file_list.append('5_vmName_remainder.csv')
     # print(wp_file_list)
     return wp_file_list
