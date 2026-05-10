@@ -35,18 +35,21 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools
+          pip install setuptools nuitka==2.7 ordered-set zstandard
           pip install -r requirements.txt
         shell: bash
 
       - name: Build Executable
-        uses: Nuitka/Nuitka-Action@v1.4
-        with:
-          nuitka-version: 2.7
-          script-name: sizer_cli.py
-          mode: onefile
-          include-package: numpy._core pandas._libs
-          nofollow-import-to: numpy.testing
+        run: |
+          python -m nuitka \
+            --mode=onefile \
+            --include-package=numpy._core \
+            --include-package=pandas._libs \
+            --nofollow-import-to=numpy.testing \
+            --assume-yes-for-downloads \
+            --output-dir=build \
+            sizer_cli.py
+        shell: bash
 
       - name: Smoke test
         run: ./build/${{ matrix.artifact_name }} --help
