@@ -44,6 +44,7 @@ jobs:
           nuitka-version: 2.7
           script-name: sizer_cli.py
           mode: onefile
+          include-package: numpy._core
 
       - name: Smoke test
         run: ./build/${{ matrix.artifact_name }} --help
