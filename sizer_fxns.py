@@ -8,9 +8,8 @@
 
 import os
 import sys
-import json
-from data_transform import data_describe, lova_conversion, rvtools_conversion, ps_filter, exclude_workloads, include_workloads, build_workload_profiles
-
+from data_transform import lova_conversion, rvtools_conversion, ps_filter, exclude_workloads, include_workloads, build_workload_profiles
+from sizer_output import data_describe
 
 def validate_inputs(input_path, file_names):
     """Validate that the input directory and all input files exist."""

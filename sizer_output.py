@@ -6,77 +6,90 @@
 ### SPDX-License-Identifier: MIT License
 ################################################################################
 
-import json
+import os
 import pandas as pd
+from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
-import time
 
 
-def generate_table(results):
-    if isinstance(results, list):
-        keys = list(results[0].keys())
-    elif isinstance(results, dict):
-        keys = list(results.keys())
-    else:
-        return None
+# VMware By Broadcom Dark Theme Palette (AA compliant)
+VMW_BLUE = "#0088EF"       # Titles
+VMW_LIGHT_BLUE = "#0098C7" # Row labels
+VMW_AQUA = "#01B9C6"       # Column headers
+VMW_GREEN = "#61A60E"      # Accent / positive values
+VMW_PURPLE = "#A468EE"     # Panel borders
 
-    table = Table()
-    for key in keys:
-        table.add_column(key)
-    for dct in results:
-        table.add_row(*[str(dct.get(c, "")) for c in keys])
+
+def df_to_table(df, title=None):
+    table = Table(title=title, show_lines=True, title_style=f"bold {VMW_BLUE}")
+    for col in df.columns:
+        table.add_column(str(col), justify="right", header_style=f"bold {VMW_AQUA}")
+    for _, row in df.iterrows():
+        values = [str(v) for v in row]
+        # Style the first column as a row label if it looks like a label (non-numeric)
+        if values and not values[0].replace('.','',1).replace('-','',1).isdigit():
+            values[0] = f"[bold {VMW_LIGHT_BLUE}]{values[0]}[/bold {VMW_LIGHT_BLUE}]"
+        table.add_row(*values)
     return table
 
-def terminal_output(**kwargs):
-    calcs = kwargs['calcs']
-    assumps = kwargs['assumps']
-    logs = kwargs['cl']
-    overview = kwargs['recommendation']['overview']
-    ext_storage = kwargs['recommendation']['ext_storage']
-    cluster_json =  kwargs['recommendation']['cluster_json']
-    vm_json =  kwargs['recommendation']['vm_json']
-    vm_exceptions = kwargs['recommendation']['vm_exceptions']
-    limited_compat = kwargs['recommendation']['limited_compat']
 
-    print()
-    print(overview)
+def data_describe(output_path, csv_file):
+    console = Console()
+    vm_data_df = pd.read_csv(os.path.join(output_path, csv_file), index_col=0)
+    vm_data_df['os'] = vm_data_df['os'].astype(str)
 
-    for id, cluster in cluster_json.items():
-        print(f'\n\n{id}\n', cluster)
+    # --- Overview ---
+    overview = Table(title=f"Environment Overview — {csv_file}", title_style=f"bold {VMW_BLUE}")
+    overview.add_column("Total VMs", justify="center", header_style=f"bold {VMW_AQUA}")
+    overview.add_column("Clusters", justify="center", header_style=f"bold {VMW_AQUA}")
+    overview.add_column("Unique OS", justify="center", header_style=f"bold {VMW_AQUA}")
+    overview.add_row(
+        str(vm_data_df.vmName.count()),
+        str(vm_data_df.cluster.nunique()),
+        str(vm_data_df.os.nunique()),
+    )
+    console.print(Panel(overview, border_style=VMW_PURPLE))
 
-    for cluster, vm_list in vm_json.items():
-        print(f'\n\n{cluster} virtual machines:\n', vm_list)
+    # --- Power States (horizontal) ---
+    power_counts = vm_data_df['vmState'].value_counts()
+    ps_table = Table(title="VM Power States", title_style=f"bold {VMW_BLUE}")
+    for state in power_counts.index:
+        ps_table.add_column(str(state), justify="center", header_style=f"bold {VMW_AQUA}")
+    ps_table.add_row(*[str(v) for v in power_counts.values])
+    console.print(Panel(ps_table, border_style=VMW_PURPLE))
 
-    try:
-        print('\nExternal Storage Capacity:\n')
-        print(ext_storage)
-    except:
-        print("There is no external storage.")
+    # --- Resource Totals (horizontal) ---
+    totals = Table(title="Resource Totals", title_style=f"bold {VMW_BLUE}")
+    totals.add_column("vCPU", justify="center", header_style=f"bold {VMW_AQUA}")
+    totals.add_column("vRAM (GiB)", justify="center", header_style=f"bold {VMW_AQUA}")
+    totals.add_column("Used VMDK (GiB)", justify="center", header_style=f"bold {VMW_AQUA}")
+    totals.add_column("Provisioned VMDK (GiB)", justify="center", header_style=f"bold {VMW_AQUA}")
+    totals.add_row(
+        str(vm_data_df.vCpu.sum()),
+        str(round(vm_data_df.vRam.sum(), 1)),
+        str(round(vm_data_df.vmdkUsed.sum(), 1)),
+        str(round(vm_data_df.vmdkTotal.sum(), 1)),
+    )
+    console.print(Panel(totals, border_style=VMW_PURPLE))
 
-    try:
-        vm_exceptions
-        print('\nVM exceptions:\n')
-        table = generate_table(vm_exceptions)
-        print(table.get_string(fields=['vmName', 'exceptionReason', 'unsupportedResourceTypes', 'preferredHostType', 'chosenHostType']))
-    except:
-        print("There are no VM exceptions.")
+    # --- Clusters (horizontal) ---
+    cluster_names = vm_data_df.cluster.unique()
+    cl_table = Table(title=f"Clusters ({len(cluster_names)})", title_style=f"bold {VMW_BLUE}")
+    for name in cluster_names:
+        cl_table.add_column(str(name), justify="center", header_style=f"bold {VMW_AQUA}")
+    cl_table.add_row(*[
+        str(vm_data_df[vm_data_df.cluster == c].vmName.count())
+        for c in cluster_names
+    ])
+    console.print(Panel(cl_table, border_style=VMW_PURPLE))
 
-    try:
-        limited_compat
-        print('\nHost incompatibilities:\n')
-        table = generate_table(limited_compat)
-        print(table.get_string(fields=['vmName', 'exceptionReason', 'unsupportedResourceTypes', 'preferredHostType', 'chosenHostType']))
-    except:
-        print("There are no host incompatibilities.")
+    # --- Guest OS (vertical — can be many rows) ---
+    os_counts = vm_data_df.groupby('os')['vmId'].nunique().reset_index()
+    os_counts.columns = ['Guest OS', 'VM Count']
+    console.print(Panel(df_to_table(os_counts, title="Guest Operating Systems"), border_style=VMW_PURPLE))
 
-    print()
-    print("Assumptions:")
-    for i in assumps:
-        print(f'  * {i}')
-
-    # print calculation logs if user desires
-    if logs is True:
-        print(calcs)
-    
-    print("\nAll output files are saved in the '/output' directory.")
-
+    # --- Statistics ---
+    desc = vm_data_df.describe().drop('count').reset_index()
+    desc.rename(columns={'index': ''}, inplace=True)
+    console.print(Panel(df_to_table(desc, title="Statistics"), border_style=VMW_PURPLE))
