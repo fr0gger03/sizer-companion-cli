@@ -29,14 +29,30 @@ Then this tool is for you - quickly process one or many spreadsheets (LiveOptics
 - **Build workload profiles** — split output into separate files grouped by cluster, OS, or VM name patterns
 - **Choose storage metric** — use provisioned or utilized storage capacity
 
-## Prerequisites
-
-- Python >= 3.12
-- [uv](https://docs.astral.sh/uv/) (recommended) or pip
-
 ## Installation
 
-```zsh path=null start=null
+There are two ways to use this tool: download a pre-built release binary, or run from source with Python.
+
+### Option 1 — Pre-built release (no Python required)
+
+Download the latest release for your platform from the [Releases](../../releases) page:
+
+- **Linux** — `sizer-linux`
+- **macOS** — `sizer-macos`
+- **Windows** — `sizer-windows.exe`
+
+Make the binary executable (Linux/macOS) and run it:
+
+```bash
+chmod +x sizer-macos          # or sizer-linux
+./sizer-macos --help
+```
+
+### Option 2 — Run from source
+
+**Prerequisites:** Python >= 3.12, [uv](https://docs.astral.sh/uv/) (recommended) or pip.
+
+```bash
 # Clone the repository
 git clone <repo-url>
 cd sizer-companion-cli
@@ -50,24 +66,29 @@ pip install -r requirements.txt
 
 ## Usage
 
-Place your **unmodified** RVTools or LiveOptics `.xlsx` file(s) in the `input/` directory, then run one of the subcommands below. Output files are written to the `output/` directory.
+All examples below use `uv run sizer_cli.py` (running from source). If you are using the pre-built release binary, replace `uv run sizer_cli.py` with the path to the binary (e.g. `./sizer-macos` or `./sizer-linux`).
 
-**NOTE** - if you have python 3.12 or later installed you should be ale to run the script directly without the use of 'uv'
+By default, input files are read from `./input/` and output files are written to `./output/` relative to the current working directory. You can override these with the `--input_dir` and `--output_dir` flags — this is especially useful when running the standalone binary from an arbitrary location.
 
 ### Describe
 
 Print a summary of the imported environment (VM count, power states, OS breakdown, clusters, resource totals):
 
-```zsh path=null start=null
+```bash
+# From source
 uv run sizer_cli.py describe -fn inventory.xlsx -ft rv-tools
 uv run sizer_cli.py describe -fn capture.xlsx -ft live-optics
+
+# Release binary with custom directories
+./sizer-macos describe -fn inventory.xlsx -ft rv-tools \
+  -id /path/to/input -od /path/to/output
 ```
 
 ### Prepare
 
 Import, transform, and export normalized data:
 
-```zsh path=null start=null
+```bash
 # Basic import — all VMs, utilized storage (default)
 uv run sizer_cli.py prepare -fn inventory.xlsx -ft rv-tools
 
@@ -97,14 +118,20 @@ uv run sizer_cli.py prepare -fn inventory.xlsx -ft rv-tools \
 
 # Multiple input files
 uv run sizer_cli.py prepare -fn site1.xlsx site2.xlsx -ft rv-tools
+
+# Release binary with custom input/output directories
+./sizer-linux prepare -fn site1.xlsx site2.xlsx -ft rv-tools \
+  -id ~/exports -od ~/results
 ```
 
 ### CLI Reference
 
 | Flag | Long Form | Description |
 |------|-----------|-------------|
-| `-fn` | `--file_name` | Space-separated input file name(s) (must be in `input/`) |
+| `-fn` | `--file_name` | Space-separated input file name(s) |
 | `-ft` | `--file_type` | `rv-tools` or `live-optics` |
+| `-id` | `--input_dir` | Directory containing input files (default: `./input/`) |
+| `-od` | `--output_dir` | Directory for output files (default: `./output/`, created automatically if missing) |
 | `-ps` | `--power_state` | `p` (powered on only) or `ps` (powered on + suspended) |
 | `-infil` | `--include_filter` | Text pattern(s) to keep |
 | `-iff` | `--include_filter_field` | Field for include filter: `cluster`, `os`, or `vmName` |
