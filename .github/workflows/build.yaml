@@ -45,7 +45,7 @@ jobs:
           nuitka-version: 2.7
           script-name: sizer_cli.py
           mode: onefile
-          include-package: numpy._core
+          include-package: numpy._core pandas._libs
           nofollow-import-to: numpy.testing
 
       - name: Smoke test
