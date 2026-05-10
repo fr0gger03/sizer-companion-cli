@@ -31,25 +31,6 @@ Then this tool is for you - quickly process one or many spreadsheets (LiveOptics
 
 ## Installation
 
-There are two ways to use this tool: download a pre-built release binary, or run from source with Python.
-
-### Option 1 — Pre-built release (no Python required)
-
-Download the latest release for your platform from the [Releases](../../releases) page:
-
-- **Linux** — `sizer-linux`
-- **macOS** — `sizer-macos`
-- **Windows** — `sizer-windows.exe`
-
-Make the binary executable (Linux/macOS) and run it:
-
-```bash
-chmod +x sizer-macos          # or sizer-linux
-./sizer-macos --help
-```
-
-### Option 2 — Run from source
-
 **Prerequisites:** Python >= 3.12, [uv](https://docs.astral.sh/uv/) (recommended) or pip.
 
 ```bash
@@ -66,7 +47,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-All examples below use `uv run sizer_cli.py` (running from source). If you are using the pre-built release binary, replace `uv run sizer_cli.py` with the path to the binary (e.g. `./sizer-macos` or `./sizer-linux`).
+All examples below use `uv run sizer_cli.py` (running from source).  If you choose not to use `uv run` you may just install requirements with `pip install -r requirements.txt` and run the commands without uv.
 
 By default, input files are read from `./input/` and output files are written to `./output/` relative to the current working directory. You can override these with the `--input_dir` and `--output_dir` flags — this is especially useful when running the standalone binary from an arbitrary location.
 
