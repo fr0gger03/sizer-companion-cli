@@ -56,6 +56,7 @@ def data_describe(output_path, csv_file):
     overview.add_row(
         str(vm_data_df.vmName.count()),
         *[str(v) for v in power_counts.values],
+        str(vm_data_df.cluster.nunique()),
         str(vm_data_df.os.nunique()),
         str(vm_data_df.vCpu.sum()),
         str(round(vm_data_df.vRam.sum(), 1)),
