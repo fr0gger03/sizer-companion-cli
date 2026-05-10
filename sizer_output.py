@@ -40,38 +40,29 @@ def data_describe(output_path, csv_file):
     vm_data_df['os'] = vm_data_df['os'].astype(str)
 
     # --- Overview ---
+    power_counts = vm_data_df['vmState'].value_counts()
+    
     overview = Table(title=f"Environment Overview — {csv_file}", title_style=f"bold {VMW_BLUE}")
     overview.add_column("Total VMs", justify="center", header_style=f"bold {VMW_AQUA}")
+    for state in power_counts.index:
+        overview.add_column(str(state), justify="center", header_style=f"bold {VMW_AQUA}")
     overview.add_column("Clusters", justify="center", header_style=f"bold {VMW_AQUA}")
     overview.add_column("Unique OS", justify="center", header_style=f"bold {VMW_AQUA}")
+    overview.add_column("vCPU", justify="center", header_style=f"bold {VMW_AQUA}")
+    overview.add_column("vRAM (GiB)", justify="center", header_style=f"bold {VMW_AQUA}")
+    overview.add_column("Used VMDK (GiB)", justify="center", header_style=f"bold {VMW_AQUA}")
+    overview.add_column("Provisioned VMDK (GiB)", justify="center", header_style=f"bold {VMW_AQUA}")
+    
     overview.add_row(
         str(vm_data_df.vmName.count()),
-        str(vm_data_df.cluster.nunique()),
+        *[str(v) for v in power_counts.values],
         str(vm_data_df.os.nunique()),
-    )
-    console.print(Panel(overview, border_style=VMW_PURPLE))
-
-    # --- Power States (horizontal) ---
-    power_counts = vm_data_df['vmState'].value_counts()
-    ps_table = Table(title="VM Power States", title_style=f"bold {VMW_BLUE}")
-    for state in power_counts.index:
-        ps_table.add_column(str(state), justify="center", header_style=f"bold {VMW_AQUA}")
-    ps_table.add_row(*[str(v) for v in power_counts.values])
-    console.print(Panel(ps_table, border_style=VMW_PURPLE))
-
-    # --- Resource Totals (horizontal) ---
-    totals = Table(title="Resource Totals", title_style=f"bold {VMW_BLUE}")
-    totals.add_column("vCPU", justify="center", header_style=f"bold {VMW_AQUA}")
-    totals.add_column("vRAM (GiB)", justify="center", header_style=f"bold {VMW_AQUA}")
-    totals.add_column("Used VMDK (GiB)", justify="center", header_style=f"bold {VMW_AQUA}")
-    totals.add_column("Provisioned VMDK (GiB)", justify="center", header_style=f"bold {VMW_AQUA}")
-    totals.add_row(
         str(vm_data_df.vCpu.sum()),
         str(round(vm_data_df.vRam.sum(), 1)),
         str(round(vm_data_df.vmdkUsed.sum(), 1)),
         str(round(vm_data_df.vmdkTotal.sum(), 1)),
     )
-    console.print(Panel(totals, border_style=VMW_PURPLE))
+    console.print(Panel(overview, border_style=VMW_PURPLE))
 
     # --- Clusters (horizontal) ---
     cluster_names = vm_data_df.cluster.unique()
