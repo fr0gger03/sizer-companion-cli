@@ -69,16 +69,6 @@ def prepare_import(**kwargs):
         "storage_capacity":storage_capacity,
         }
 
-    # # build the parameter dictionary for getting the recommendation
-    # options = ['output_format']
-    # rec_params = {}
-    # for i in options:
-    #     if i in kwargs:
-    #         option = kwargs[i]
-    #     else:
-    #         option = None
-    #     rec_params[i] = option
-
     # instantiate a list to be used in the payload parameter dictionary
     wp_file_list = []
 
