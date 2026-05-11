@@ -76,6 +76,12 @@ def data_describe(output_path, csv_file):
     ])
     console.print(Panel(cl_table, border_style=VMW_PURPLE))
 
+    # --- vCPU Distribution ---
+    vcpu_counts = vm_data_df.groupby('vCpu')['vmId'].nunique().reset_index()
+    vcpu_counts.columns = ['vCPU Count', 'VM Count']
+    vcpu_counts = vcpu_counts.sort_values('vCPU Count').reset_index(drop=True)
+    console.print(Panel(df_to_table(vcpu_counts, title="vCPU Distribution"), border_style=VMW_PURPLE))
+
     # --- Guest OS (vertical — can be many rows) ---
     os_counts = vm_data_df.groupby('os')['vmId'].nunique().reset_index()
     os_counts.columns = ['Guest OS', 'VM Count']

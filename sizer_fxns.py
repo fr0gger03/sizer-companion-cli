@@ -8,7 +8,7 @@
 
 import os
 import sys
-from data_transform import lova_conversion, rvtools_conversion, ps_filter, exclude_workloads, include_workloads, build_workload_profiles
+from data_transform import lova_conversion, rvtools_conversion, ps_filter, exclude_workloads, include_workloads, build_workload_profiles, build_vcpu_profiles
 from sizer_output import data_describe
 
 def validate_inputs(input_path, file_names):
@@ -116,10 +116,12 @@ def prepare_import(**kwargs):
         else:
             pass
 
+        vcpu_grouping = kwargs.get('vcpu_grouping')
+
         if kwargs['workload_profiles'] is not None:
             match kwargs['workload_profiles']:
                 case "all_clusters":
-                    profile_params = {"csv_file":csv_file, "workload_profiles":kwargs['workload_profiles'], "profile_list":kwargs['profile_list'], "include_remaining":kwargs['include_remaining'], "output_path":output_path}
+                    profile_params = {"csv_file":csv_file, "workload_profiles":kwargs['workload_profiles'], "profile_list":kwargs['profile_list'], "include_remaining":kwargs['include_remaining'], "output_path":output_path, "vcpu_grouping":vcpu_grouping}
                     wp_file_list = build_workload_profiles(**profile_params)
 
                 case "some_clusters" | "os" | "vmName":
@@ -127,8 +129,11 @@ def prepare_import(**kwargs):
                         print("You must supply a list of one or more valid cluster names / guest operating systems / VM names.  Use './sizer-cli.py describe' for a summary of the environment, or review your file.")
                         sys.exit(1)
                     else:
-                        profile_params = {"csv_file":csv_file, "workload_profiles":kwargs['workload_profiles'], "profile_list":kwargs['profile_list'], "include_remaining":kwargs['include_remaining'], "output_path":output_path}
+                        profile_params = {"csv_file":csv_file, "workload_profiles":kwargs['workload_profiles'], "profile_list":kwargs['profile_list'], "include_remaining":kwargs['include_remaining'], "output_path":output_path, "vcpu_grouping":vcpu_grouping}
                         wp_file_list = build_workload_profiles(**profile_params)
+        elif vcpu_grouping is not None:
+            vcpu_params = {"csv_file":csv_file, "vcpu_grouping":vcpu_grouping, "output_path":output_path}
+            wp_file_list = build_vcpu_profiles(**vcpu_params)
         else:
             pass
 

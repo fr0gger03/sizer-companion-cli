@@ -6,6 +6,7 @@
 ### SPDX-License-Identifier: MIT License
 ################################################################################
 
+import math
 import os
 import pandas as pd
 
@@ -285,15 +286,52 @@ def exclude_workloads(**kwargs):
     return csv_file
 
 
+def assign_vcpu_group(df, bucket_size):
+    """Add a vcpu_group column with bucket labels like '1-2_vCPU' or '1-4_vCPU'."""
+    upper = df['vCpu'].apply(lambda v: max(1, math.ceil(v / bucket_size)) * bucket_size)
+    lower = upper - bucket_size + 1
+    df = df.copy()
+    df['vcpu_group'] = lower.astype(int).astype(str) + '-' + upper.astype(int).astype(str) + '_vCPU'
+    return df
+
+
+def _sub_split_by_vcpu(df, bucket_size, output_path, prefix):
+    """Split a DataFrame by vCPU bucket and write one CSV per bucket.
+    Returns a list of written CSV filenames."""
+    df = assign_vcpu_group(df, bucket_size)
+    file_list = []
+    for group_label, group_df in df.groupby('vcpu_group'):
+        fname = f'{prefix}_vcpu_{group_label}.csv'
+        group_df.drop(columns=['vcpu_group']).to_csv(os.path.join(output_path, fname))
+        file_list.append(fname)
+    return file_list
+
+
+def build_vcpu_profiles(**kwargs):
+    """Standalone vCPU grouping — used when -vg is specified without -wp."""
+    output_path = kwargs['output_path']
+    csv_file = kwargs['csv_file']
+    bucket_size = kwargs['vcpu_grouping']
+
+    print()
+    print(f'Grouping workloads into vCPU buckets of {bucket_size}.')
+    vm_data_df = pd.read_csv(os.path.join(output_path, csv_file), index_col=0)
+    return _sub_split_by_vcpu(vm_data_df, bucket_size, output_path, '5')
+
+
 def build_workload_profiles(**kwargs):
     output_path = kwargs['output_path']
     csv_file = kwargs['csv_file']
     profile_config = kwargs['workload_profiles']
     if kwargs['profile_list'] is not None:
         profile_list = kwargs['profile_list']
+    vcpu_grouping = kwargs.get('vcpu_grouping')
 
     print()
-    print(f'Separating workloads into profiles based on "{profile_config}"')
+    if vcpu_grouping is not None:
+        print(f'Separating workloads into profiles based on "{profile_config}" with vCPU sub-grouping (buckets of {vcpu_grouping})')
+    else:
+        print(f'Separating workloads into profiles based on "{profile_config}"')
     #create list for storing file names
     wp_file_list = []
 
@@ -305,8 +343,11 @@ def build_workload_profiles(**kwargs):
             workload_profiles = vm_data_df.groupby('cluster')
             # save resulting dataframes as csv files 
             for profile, profile_df in workload_profiles:
-                profile_df.to_csv(os.path.join(output_path, f'5_cluster_{profile}.csv'))
-                wp_file_list.append(f'5_cluster_{profile}.csv')
+                if vcpu_grouping is not None:
+                    wp_file_list.extend(_sub_split_by_vcpu(profile_df, vcpu_grouping, output_path, f'5_cluster_{profile}'))
+                else:
+                    profile_df.to_csv(os.path.join(output_path, f'5_cluster_{profile}.csv'))
+                    wp_file_list.append(f'5_cluster_{profile}.csv')
     
         case "some_clusters":
             print("Creating custom cluster workload profiles.")
@@ -315,42 +356,60 @@ def build_workload_profiles(**kwargs):
             # for list of clusters to keep, export to csv
             for profile, profile_df in workload_profiles:
                 if profile in profile_list:
-                    profile_df.to_csv(os.path.join(output_path, f'5_cluster_{profile}.csv'))
-                    wp_file_list.append(f'5_cluster_{profile}.csv')
+                    if vcpu_grouping is not None:
+                        wp_file_list.extend(_sub_split_by_vcpu(profile_df, vcpu_grouping, output_path, f'5_cluster_{profile}'))
+                    else:
+                        profile_df.to_csv(os.path.join(output_path, f'5_cluster_{profile}.csv'))
+                        wp_file_list.append(f'5_cluster_{profile}.csv')
 
             # if desired in original DF, drop rows for exported clusters
             if kwargs['include_remaining'] == True:
                 vm_data_df_trimmed = vm_data_df[vm_data_df.cluster.isin(profile_list) == False]
-                vm_data_df_trimmed.to_csv(os.path.join(output_path, '5_cluster_remainder.csv'))
-                wp_file_list.append('5_cluster_remainder.csv')
+                if vcpu_grouping is not None:
+                    wp_file_list.extend(_sub_split_by_vcpu(vm_data_df_trimmed, vcpu_grouping, output_path, '5_cluster_remainder'))
+                else:
+                    vm_data_df_trimmed.to_csv(os.path.join(output_path, '5_cluster_remainder.csv'))
+                    wp_file_list.append('5_cluster_remainder.csv')
 
         case "os":
             print("Creating workload profiles based on GUEST OPERATING SYSTEM using text match.")
             for match_string in profile_list:
                 profile_df = vm_data_df[vm_data_df['os'].str.contains(match_string)]
-                profile_df.to_csv(os.path.join(output_path, f'5_guest_os_{match_string}.csv'))
-                wp_file_list.append(f'5_guest_os_{match_string}.csv')
+                if vcpu_grouping is not None:
+                    wp_file_list.extend(_sub_split_by_vcpu(profile_df, vcpu_grouping, output_path, f'5_guest_os_{match_string}'))
+                else:
+                    profile_df.to_csv(os.path.join(output_path, f'5_guest_os_{match_string}.csv'))
+                    wp_file_list.append(f'5_guest_os_{match_string}.csv')
                 
             # to keep remaining workloads, export all VM NOT matching to remainder CSV
             if kwargs['include_remaining'] == True:
                 pattern = '|'.join(profile_list)
                 vm_data_df_trimmed = vm_data_df[~vm_data_df['os'].str.contains(pattern, case=False)]
-                vm_data_df_trimmed.to_csv(os.path.join(output_path, '5_os_remainder.csv'))
-                wp_file_list.append('5_os_remainder.csv')
+                if vcpu_grouping is not None:
+                    wp_file_list.extend(_sub_split_by_vcpu(vm_data_df_trimmed, vcpu_grouping, output_path, '5_os_remainder'))
+                else:
+                    vm_data_df_trimmed.to_csv(os.path.join(output_path, '5_os_remainder.csv'))
+                    wp_file_list.append('5_os_remainder.csv')
 
         case "vmName":
             print("Creating workload profiles based on VM NAME using text match.")
 
             for match_string in profile_list:
                 profile_df = vm_data_df[vm_data_df['vmName'].str.contains(match_string)]
-                profile_df.to_csv(os.path.join(output_path, f'5_vmName_{match_string}.csv'))
-                wp_file_list.append(f'5_vmName_{match_string}.csv')
+                if vcpu_grouping is not None:
+                    wp_file_list.extend(_sub_split_by_vcpu(profile_df, vcpu_grouping, output_path, f'5_vmName_{match_string}'))
+                else:
+                    profile_df.to_csv(os.path.join(output_path, f'5_vmName_{match_string}.csv'))
+                    wp_file_list.append(f'5_vmName_{match_string}.csv')
 
             # to keep remaining workloads, export all VM NOT matching to remainder CSV
             if kwargs['include_remaining'] == True:
                 pattern = '|'.join(profile_list)
                 vm_data_df_trimmed = vm_data_df[~vm_data_df['vmName'].str.contains(pattern, case=False)]
-                vm_data_df_trimmed.to_csv(os.path.join(output_path, '5_vmName_remainder.csv'))
-                wp_file_list.append('5_vmName_remainder.csv')
+                if vcpu_grouping is not None:
+                    wp_file_list.extend(_sub_split_by_vcpu(vm_data_df_trimmed, vcpu_grouping, output_path, '5_vmName_remainder'))
+                else:
+                    vm_data_df_trimmed.to_csv(os.path.join(output_path, '5_vmName_remainder.csv'))
+                    wp_file_list.append('5_vmName_remainder.csv')
     return wp_file_list
 
