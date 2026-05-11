@@ -60,7 +60,7 @@ def main():
     preparation_parser.add_argument('-wp', '--workload_profiles', choices=['all_clusters', 'some_clusters', 'os','vmName'], help = "Use to create workload profiles based on the selected grouping.")
     preparation_parser.add_argument('-pl', '--profile_list', nargs = '+', help = 'A space-separated list of text strings used to filter workloads for the creation of workload profiles.')
     preparation_parser.add_argument('-ir', '--include_remaining', action= 'store_true', help= 'Use to indicate you wish to keep remaining workloads - default is to discard.')
-    preparation_parser.add_argument('-vg', '--vcpu_grouping', type=int, choices=[2, 4], help='Group workloads into vCPU buckets of the specified size (2 or 4). Can be used alone or combined with -wp.')
+    preparation_parser.add_argument('-vg', '--vcpu_grouping', type=int, choices=[2, 4], help='Show a summary table of mean resource values grouped by vCPU buckets of the specified size (2 or 4).')
     preparation_parser.add_argument('-sc', '--storage_capacity', nargs = '?', choices=['PROVISIONED', 'UTILIZED'], default = "UTILIZED", type=str.upper, help="Use to specify whether PROVISIONED or UTILIZED storage is used (default is UTILIZED).")
     preparation_parser.add_argument('-o', '--output_format', choices=['csv', 'pdf', 'ppt', 'xls', 'terminal'], default = "csv", help="Select output format Default is csv.")
 

@@ -34,7 +34,7 @@ def df_to_table(df, title=None):
     return table
 
 
-def data_describe(output_path, csv_file):
+def data_describe(output_path, csv_file, vcpu_grouping=None):
     console = Console()
     vm_data_df = pd.read_csv(os.path.join(output_path, csv_file), index_col=0)
     vm_data_df['os'] = vm_data_df['os'].astype(str)
@@ -91,3 +91,33 @@ def data_describe(output_path, csv_file):
     desc = vm_data_df.describe().drop('count').reset_index()
     desc.rename(columns={'index': ''}, inplace=True)
     console.print(Panel(df_to_table(desc, title="Statistics"), border_style=VMW_PURPLE))
+
+    # --- Mean by vCPU Group ---
+    if vcpu_grouping is not None:
+        import math
+        upper = vm_data_df['vCpu'].apply(lambda v: max(1, math.ceil(v / vcpu_grouping)) * vcpu_grouping)
+        lower = upper - vcpu_grouping + 1
+        vm_data_df = vm_data_df.copy()
+        vm_data_df['vcpu_group'] = lower.astype(int).astype(str) + '-' + upper.astype(int).astype(str) + ' vCPU'
+
+        agg_cols = {'vmId': 'count', 'vCpu': 'mean', 'vRam': 'mean', 'vmdkUsed': 'mean', 'vmdkTotal': 'mean'}
+        # Include IOPS columns if present (LiveOptics data)
+        for col in ['readIOPS', 'writeIOPS']:
+            if col in vm_data_df.columns:
+                agg_cols[col] = 'mean'
+
+        grouped = vm_data_df.groupby('vcpu_group', sort=False).agg(agg_cols)
+        grouped = grouped.sort_values('vCpu').reset_index()
+        grouped = grouped.round(1)
+        grouped.rename(columns={
+            'vcpu_group': 'vCPU Group',
+            'vmId': 'VM Count',
+            'vCpu': 'Mean vCPU',
+            'vRam': 'Mean vRAM (GiB)',
+            'vmdkUsed': 'Mean Used VMDK (GiB)',
+            'vmdkTotal': 'Mean Prov. VMDK (GiB)',
+            'readIOPS': 'Mean Read IOPS',
+            'writeIOPS': 'Mean Write IOPS',
+        }, inplace=True)
+
+        console.print(Panel(df_to_table(grouped, title=f"Mean by vCPU Group (buckets of {vcpu_grouping})"), border_style=VMW_PURPLE))

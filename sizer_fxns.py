@@ -8,7 +8,7 @@
 
 import os
 import sys
-from data_transform import lova_conversion, rvtools_conversion, ps_filter, exclude_workloads, include_workloads, build_workload_profiles, build_vcpu_profiles
+from data_transform import lova_conversion, rvtools_conversion, ps_filter, exclude_workloads, include_workloads, build_workload_profiles
 from sizer_output import data_describe
 
 def validate_inputs(input_path, file_names):
@@ -69,15 +69,15 @@ def prepare_import(**kwargs):
         "storage_capacity":storage_capacity,
         }
 
-    # build the parameter dictionary for getting the recommendation
-    options = ['output_format']
-    rec_params = {}
-    for i in options:
-        if i in kwargs:
-            option = kwargs[i]
-        else:
-            option = None
-        rec_params[i] = option
+    # # build the parameter dictionary for getting the recommendation
+    # options = ['output_format']
+    # rec_params = {}
+    # for i in options:
+    #     if i in kwargs:
+    #         option = kwargs[i]
+    #     else:
+    #         option = None
+    #     rec_params[i] = option
 
     # instantiate a list to be used in the payload parameter dictionary
     wp_file_list = []
@@ -116,12 +116,10 @@ def prepare_import(**kwargs):
         else:
             pass
 
-        vcpu_grouping = kwargs.get('vcpu_grouping')
-
         if kwargs['workload_profiles'] is not None:
             match kwargs['workload_profiles']:
                 case "all_clusters":
-                    profile_params = {"csv_file":csv_file, "workload_profiles":kwargs['workload_profiles'], "profile_list":kwargs['profile_list'], "include_remaining":kwargs['include_remaining'], "output_path":output_path, "vcpu_grouping":vcpu_grouping}
+                    profile_params = {"csv_file":csv_file, "workload_profiles":kwargs['workload_profiles'], "profile_list":kwargs['profile_list'], "include_remaining":kwargs['include_remaining'], "output_path":output_path}
                     wp_file_list = build_workload_profiles(**profile_params)
 
                 case "some_clusters" | "os" | "vmName":
@@ -129,11 +127,8 @@ def prepare_import(**kwargs):
                         print("You must supply a list of one or more valid cluster names / guest operating systems / VM names.  Use './sizer-cli.py describe' for a summary of the environment, or review your file.")
                         sys.exit(1)
                     else:
-                        profile_params = {"csv_file":csv_file, "workload_profiles":kwargs['workload_profiles'], "profile_list":kwargs['profile_list'], "include_remaining":kwargs['include_remaining'], "output_path":output_path, "vcpu_grouping":vcpu_grouping}
+                        profile_params = {"csv_file":csv_file, "workload_profiles":kwargs['workload_profiles'], "profile_list":kwargs['profile_list'], "include_remaining":kwargs['include_remaining'], "output_path":output_path}
                         wp_file_list = build_workload_profiles(**profile_params)
-        elif vcpu_grouping is not None:
-            vcpu_params = {"csv_file":csv_file, "vcpu_grouping":vcpu_grouping, "output_path":output_path}
-            wp_file_list = build_vcpu_profiles(**vcpu_params)
         else:
             pass
 
@@ -145,9 +140,10 @@ def prepare_import(**kwargs):
         
         print("Your data is prepped...")
         print()
+        vcpu_grouping = kwargs.get('vcpu_grouping')
         for file in wp_file_list:
             print(f'Here is a summary of profile {file} - you may find the CSV in the "Output" directory:') 
-            data_describe(output_path,file)
+            data_describe(output_path, file, vcpu_grouping=vcpu_grouping)
             print()
             print()
     else:

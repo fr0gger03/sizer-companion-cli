@@ -27,7 +27,7 @@ Then this tool is for you - quickly process one or many spreadsheets (LiveOptics
 - **Filter by power state** — include only powered-on VMs, or powered-on and suspended
 - **Include / exclude workloads** — filter by cluster name, guest OS, or exact VM name
 - **Build workload profiles** — split output into separate files grouped by cluster, OS, or VM name patterns
-- **Group by vCPU count** — bucket workloads into groups of 2 or 4 vCPUs, standalone or combined with other profiles
+- **vCPU grouping summary** — display a table of mean resource values (vRAM, storage, IOPS) grouped by vCPU buckets of 2 or 4
 - **Choose storage metric** — use provisioned or utilized storage capacity
 
 ## Installation
@@ -98,10 +98,10 @@ uv run sizer_cli.py prepare -fn inventory.xlsx -ft rv-tools -wp all_clusters
 uv run sizer_cli.py prepare -fn inventory.xlsx -ft rv-tools \
   -wp some_clusters -pl ClusterA ClusterB -ir
 
-# Group all workloads into vCPU buckets of 4 (1-4, 5-8, 9-12, …)
+# Show mean resource values grouped by 4-vCPU buckets (1-4, 5-8, 9-12, …)
 uv run sizer_cli.py prepare -fn inventory.xlsx -ft rv-tools -vg 4
 
-# Combine cluster profiles with vCPU grouping — each cluster split by 2-vCPU buckets
+# Combine with cluster profiles — each profile summary includes a vCPU group table
 uv run sizer_cli.py prepare -fn inventory.xlsx -ft rv-tools -wp all_clusters -vg 2
 
 # Multiple input files
@@ -128,7 +128,7 @@ uv run sizer_cli.py prepare -fn site1.xlsx site2.xlsx -ft rv-tools
 | `-wp` | `--workload_profiles` | Grouping mode: `all_clusters`, `some_clusters`, `os`, or `vmName` |
 | `-pl` | `--profile_list` | Names/patterns for workload profile grouping |
 | `-ir` | `--include_remaining` | Keep unmatched VMs in a remainder file |
-| `-vg` | `--vcpu_grouping` | Group workloads into vCPU buckets of `2` or `4`. Can be used alone or combined with `-wp`. |
+| `-vg` | `--vcpu_grouping` | Show a summary table of mean resource values grouped by vCPU buckets of `2` or `4`. |
 | `-sc` | `--storage_capacity` | `PROVISIONED` or `UTILIZED` (default) |
 | `-o` | `--output_format` | Output format (default: `csv`) |
 
